@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salí — Someone's watching out for you when you're out</title>
+<meta name="description" content="Salí is a personal-safety app that lets you share live check-ins with people you trust. No data collection, ever. Create a circle, start a watch-me session, and your people see you're okay until you mark yourself safe.">
+
+<meta property="og:title" content="Salí — watch over me">
+<meta property="og:description" content="Share live check-ins with the people you trust. No data collection, ever.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://salicircles.com">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#080510;
+  --bg-2:#120a20;
+  --white:#f1ecf9;
+  --white-dim:rgba(241,236,249,.62);
+  --white-faint:rgba(241,236,249,.36);
+  --purple:#a673ff;
+  --purple-bright:#c9a6ff;
+  --purple-deep:#6d28d9;
+  --magenta:#c655e8;
+  --line:rgba(241,236,249,.12);
+  --line-soft:rgba(241,236,249,.07);
+  --surface:rgba(241,236,249,.035);
+  --surface-2:rgba(241,236,249,.06);
+  --maxw:1160px;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Hanken Grotesk",system-ui,sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  color:var(--white);
+  background:var(--bg);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* atmospheric backdrop: purple glow on black */
+.backdrop{position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(120% 80% at 50% 116%, rgba(166,115,255,.30) 0%, rgba(109,40,217,.15) 30%, transparent 56%),
+    radial-gradient(80% 60% at 82% -8%, rgba(198,85,232,.14) 0%, transparent 50%),
+    linear-gradient(180deg,#080510 0%, #0c0717 55%, #120a20 100%);
+}
+.grain{position:fixed;inset:0;z-index:-1;opacity:.05;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 26px}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--purple);color:#0a0512}
+
+/* ---------- NAV ---------- */
+header.nav{position:sticky;top:0;z-index:60;
+  backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(8,5,16,.88),rgba(8,5,16,.42));
+  border-bottom:1px solid var(--line-soft);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{display:flex;align-items:center;gap:11px;font-family:var(--serif);font-weight:600;font-size:1.42rem;letter-spacing:-.01em}
+.logo .mark{width:30px;height:30px;flex:none}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:.93rem;color:var(--white-dim);transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.nav-right{display:flex;align-items:center;gap:18px}
+.lang-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:.78rem;font-weight:600}
+.lang-toggle button{background:none;border:0;color:var(--white-faint);padding:6px 12px;cursor:pointer;font-family:var(--sans);font-weight:600;letter-spacing:.04em;transition:.2s}
+.lang-toggle button.active{background:var(--white);color:#120a20}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-weight:600;font-size:.95rem;
+  border:0;cursor:pointer;border-radius:999px;padding:12px 22px;transition:transform .18s ease, box-shadow .25s ease;}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--magenta));color:#fff;
+  box-shadow:0 10px 30px -10px rgba(166,115,255,.7);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -10px rgba(198,85,232,.8)}
+.btn-ghost{background:var(--surface-2);color:var(--white);border:1px solid var(--line)}
+.menu-btn{display:none;background:none;border:0;color:var(--white);cursor:pointer;padding:6px}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;padding:72px 0 36px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:.78rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--purple-bright);border:1px solid rgba(166,115,255,.32);background:rgba(166,115,255,.08);
+  padding:7px 15px;border-radius:999px;margin-bottom:26px}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--purple-bright);box-shadow:0 0 0 0 rgba(166,115,255,.6);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(166,115,255,.55)}70%{box-shadow:0 0 0 9px rgba(166,115,255,0)}100%{box-shadow:0 0 0 0 rgba(166,115,255,0)}}
+h1.hero-title{font-family:var(--serif);font-weight:400;font-size:clamp(2.6rem,5.4vw,4.3rem);line-height:1.02;letter-spacing:-.02em;margin-bottom:22px}
+h1.hero-title em{font-style:italic;color:var(--purple)}
+.hero-sub{font-size:1.12rem;color:var(--white-dim);max-width:30ch;margin-bottom:32px}
+
+.waitlist{display:flex;gap:10px;max-width:430px;flex-wrap:wrap}
+.waitlist input{flex:1;min-width:200px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;
+  padding:13px 20px;color:var(--white);font-family:var(--sans);font-size:.96rem;outline:none;transition:border .2s}
+.waitlist input::placeholder{color:var(--white-faint)}
+.waitlist input:focus{border-color:var(--purple)}
+.form-note{font-size:.82rem;color:var(--white-faint);margin-top:14px}
+.form-success{display:none;align-items:center;gap:10px;color:var(--purple-bright);font-weight:600;font-size:.98rem;margin-top:6px}
+.form-success.show{display:flex}
+.form-error{display:none;align-items:center;gap:8px;color:#e9a3f4;font-weight:600;font-size:.92rem;margin-top:10px}
+.form-error.show{display:flex}
+
+.hero-visual{position:relative;height:520px;display:flex;align-items:center;justify-content:center}
+.rings{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(166,115,255,.26)}
+.ring.r1{width:150px;height:150px;animation:ripple 4s ease-out infinite}
+.ring.r2{width:280px;height:280px;animation:ripple 4s ease-out infinite .9s}
+.ring.r3{width:420px;height:420px;animation:ripple 4s ease-out infinite 1.8s}
+@keyframes ripple{0%{transform:scale(.7);opacity:0}25%{opacity:.7}100%{transform:scale(1.15);opacity:0}}
+.you-dot{position:absolute;z-index:1;width:16px;height:16px;border-radius:50%;background:var(--purple);
+  box-shadow:0 0 0 6px rgba(166,115,255,.2),0 0 30px 6px rgba(166,115,255,.55)}
+
+.phone{position:relative;z-index:2;width:248px;height:498px;border-radius:40px;
+  background:linear-gradient(165deg,#1c1430,#100a1e);border:1px solid rgba(241,236,249,.14);
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.85), inset 0 1px 0 rgba(241,236,249,.08);
+  padding:14px}
+.phone .screen{width:100%;height:100%;border-radius:28px;background:linear-gradient(180deg,#0e0a1c,#160e26);
+  overflow:hidden;position:relative;padding:20px 16px}
+.notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:74px;height:6px;border-radius:6px;background:rgba(241,236,249,.18)}
+.scr-head{margin-top:14px;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--white-faint);font-weight:600}
+.scr-card{margin-top:12px;background:rgba(241,236,249,.05);border:1px solid var(--line-soft);border-radius:18px;padding:15px}
+.scr-status{display:flex;align-items:center;gap:8px;font-size:.74rem;color:var(--purple-bright);font-weight:600}
+.scr-status .d{width:7px;height:7px;border-radius:50%;background:var(--purple-bright);animation:pulse 2.4s infinite}
+.scr-title{font-family:var(--serif);font-size:1.18rem;margin:9px 0 2px}
+.scr-count{font-size:1.9rem;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--purple-bright)}
+.scr-meta{font-size:.72rem;color:var(--white-faint);margin-top:2px}
+.scr-avatars{display:flex;margin-top:14px}
+.scr-avatars span{width:30px;height:30px;border-radius:50%;border:2px solid #160e26;margin-left:-8px;
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#150a22}
+.scr-avatars span:first-child{margin-left:0}
+.av1{background:var(--purple)}.av2{background:var(--magenta)}.av3{background:var(--purple-bright)}.av4{background:#8b5cf6}
+.scr-btn{margin-top:16px;background:linear-gradient(135deg,var(--purple),var(--purple-deep));color:#fff;text-align:center;
+  font-weight:700;font-size:.82rem;padding:11px;border-radius:12px}
+.scr-sos{margin-top:9px;background:rgba(198,85,232,.16);border:1px solid rgba(198,85,232,.45);color:#e9a3f4;
+  text-align:center;font-weight:700;font-size:.78rem;padding:9px;border-radius:12px;letter-spacing:.05em}
+
+/* ---------- trust strip ---------- */
+.strip{border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.trust-strip{display:flex;justify-content:center;gap:36px;flex-wrap:wrap;padding:22px 0}
+.trust-strip span{display:inline-flex;align-items:center;gap:9px;font-size:.9rem;color:var(--white-dim);font-weight:500}
+.trust-strip .d{width:6px;height:6px;border-radius:50%;background:var(--purple-bright);box-shadow:0 0 10px var(--purple);flex:none}
+
+/* ---------- sections ---------- */
+section{position:relative;padding:90px 0}
+.sec-tag{font-size:.78rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--magenta);margin-bottom:16px}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(2rem,3.6vw,2.9rem);line-height:1.08;letter-spacing:-.02em;margin-bottom:18px}
+h2 em{font-style:italic;color:var(--purple)}
+.lede{font-size:1.08rem;color:var(--white-dim);max-width:54ch}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:54px}
+.step{background:var(--surface);border:1px solid var(--line-soft);border-radius:22px;padding:30px 26px;position:relative;transition:transform .3s ease, border-color .3s}
+.step:hover{transform:translateY(-4px);border-color:var(--line)}
+.step .n{font-family:var(--serif);font-size:1rem;color:var(--purple);border:1px solid rgba(166,115,255,.4);width:38px;height:38px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.step h3{font-family:var(--serif);font-weight:500;font-size:1.32rem;margin-bottom:9px}
+.step p{font-size:.97rem;color:var(--white-dim)}
+
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:54px}
+.feat{background:var(--surface);border:1px solid var(--line-soft);border-radius:20px;padding:28px 24px;transition:transform .3s ease, background .3s}
+.feat:hover{transform:translateY(-4px);background:var(--surface-2)}
+.feat .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  background:rgba(166,115,255,.12);border:1px solid rgba(166,115,255,.26)}
+.feat .ic svg{width:23px;height:23px;stroke:var(--purple);fill:none;stroke-width:1.7}
+.feat.bright .ic{background:rgba(201,166,255,.12);border-color:rgba(201,166,255,.3)}
+.feat.bright .ic svg{stroke:var(--purple-bright)}
+.feat.magenta .ic{background:rgba(198,85,232,.12);border-color:rgba(198,85,232,.3)}
+.feat.magenta .ic svg{stroke:var(--magenta)}
+.feat h3{font-family:var(--serif);font-weight:500;font-size:1.22rem;margin-bottom:8px}
+.feat p{font-size:.93rem;color:var(--white-dim)}
+
+/* ---------- salimos spotlight ---------- */
+.spotlight{background:
+    radial-gradient(70% 120% at 0% 50%, rgba(166,115,255,.10), transparent 60%);
+  border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.spotlight-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.spot-copy .lede{margin-bottom:16px}
+.spot-copy p.small{font-size:.97rem;color:var(--white-dim);max-width:48ch}
+.sal-visual{position:relative;display:flex;justify-content:center;align-items:center;min-height:340px}
+.sal-glow{position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(166,115,255,.28),transparent 65%);filter:blur(10px)}
+.sal-card{position:relative;z-index:1;width:312px;background:linear-gradient(165deg,rgba(166,115,255,.12),rgba(18,10,32,.7));
+  border:1px solid var(--line);border-radius:26px;padding:26px;box-shadow:0 36px 80px -34px rgba(109,40,217,.8)}
+.sal-card .h{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--white-faint);font-weight:600}
+.sal-card .t{font-family:var(--serif);font-size:1.5rem;margin:8px 0 18px}
+.sal-avatars{display:flex}
+.sal-avatars span{width:46px;height:46px;border-radius:50%;border:2.5px solid #160e26;margin-left:-12px;
+  display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;color:#150a22}
+.sal-avatars span:first-child{margin-left:0}
+.sal-status{margin-top:20px;display:inline-flex;align-items:center;gap:8px;background:rgba(166,115,255,.14);
+  border:1px solid rgba(166,115,255,.35);color:var(--purple-bright);font-weight:700;font-size:.85rem;padding:8px 14px;border-radius:999px}
+.sal-status .d{width:7px;height:7px;border-radius:50%;background:var(--purple-bright);animation:pulse 2.4s infinite}
+.sal-meta{margin-top:14px;font-size:.84rem;color:var(--white-faint)}
+
+/* ---------- trust ---------- */
+.trust{background:
+    radial-gradient(80% 120% at 100% 0%, rgba(198,85,232,.09), transparent 60%),
+    linear-gradient(180deg,rgba(241,236,249,.025),transparent);
+  border-bottom:1px solid var(--line-soft)}
+.trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.trust-list{display:flex;flex-direction:column;gap:18px;margin-top:8px}
+.trust-item{display:flex;gap:14px}
+.trust-item .tick{flex:none;width:24px;height:24px;border-radius:50%;background:rgba(166,115,255,.16);
+  border:1px solid rgba(166,115,255,.42);display:flex;align-items:center;justify-content:center;margin-top:2px}
+.trust-item .tick svg{width:12px;height:12px;stroke:var(--purple-bright);stroke-width:2.4;fill:none}
+.trust-item h4{font-weight:600;font-size:1rem;margin-bottom:2px}
+.trust-item p{font-size:.92rem;color:var(--white-dim)}
+.disclaimer{margin-top:30px;background:rgba(198,85,232,.08);border:1px solid rgba(198,85,232,.3);border-radius:16px;padding:20px 22px}
+.disclaimer strong{color:var(--magenta)}
+.disclaimer p{font-size:.92rem;color:var(--white-dim)}
+
+.cta-band{text-align:center;padding:96px 0}
+.cta-band .inner{max-width:640px;margin:0 auto}
+.cta-band .waitlist{margin:32px auto 0;justify-content:center}
+
+.faq-list{margin-top:42px;border-top:1px solid var(--line-soft)}
+.faq-item{border-bottom:1px solid var(--line-soft)}
+.faq-q{width:100%;background:none;border:0;color:var(--white);font-family:var(--sans);font-size:1.08rem;font-weight:500;
+  text-align:left;padding:24px 40px 24px 0;cursor:pointer;position:relative;display:block}
+.faq-q::after{content:"+";position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:1.5rem;color:var(--purple);font-weight:400;transition:transform .3s}
+.faq-item.open .faq-q::after{transform:translateY(-50%) rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-a p{padding:0 0 24px;color:var(--white-dim);font-size:.98rem;max-width:62ch}
+
+footer{border-top:1px solid var(--line-soft);padding:56px 0 40px}
+.foot-grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-start}
+.foot-brand{max-width:300px}
+.foot-brand p{color:var(--white-dim);font-size:.92rem;margin-top:14px}
+.foot-cols{display:flex;gap:64px;flex-wrap:wrap}
+.foot-col h5{font-size:.76rem;letter-spacing:.13em;text-transform:uppercase;color:var(--white-faint);margin-bottom:14px;font-weight:600}
+.foot-col a{display:block;color:var(--white-dim);font-size:.93rem;margin-bottom:10px;transition:color .2s}
+.foot-col a:hover{color:var(--white)}
+.foot-bottom{margin-top:46px;padding-top:24px;border-top:1px solid var(--line-soft);display:flex;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;font-size:.84rem;color:var(--white-faint)}
+
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease, transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:10px}
+  .hero-visual{height:430px;order:-1;margin-bottom:10px;transform:scale(.92)}
+  .hero-sub{max-width:none}
+  .steps,.features{grid-template-columns:1fr 1fr}
+  .trust-grid,.spotlight-grid{grid-template-columns:1fr;gap:32px}
+  .sal-visual{order:-1;min-height:280px}
+  .nav-links{display:none}
+  .menu-btn{display:block}
+  .nav-links.open{display:flex;position:absolute;top:72px;left:0;right:0;flex-direction:column;gap:0;
+    background:var(--bg-2);border-bottom:1px solid var(--line);padding:8px 26px 18px}
+  .nav-links.open a{padding:13px 0;border-bottom:1px solid var(--line-soft)}
+}
+@media(max-width:600px){
+  .steps,.features{grid-template-columns:1fr}
+  .nav-right .btn{display:none}
+  .foot-cols{gap:36px}
+  h1.hero-title{font-size:2.45rem}
+  .trust-strip{gap:18px;flex-direction:column;align-items:center}
+}
+</style>
+</head>
+<body>
+<div class="backdrop"></div>
+<div class="grain"></div>
+
+<!-- NAV -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="#" class="logo" aria-label="Salí Circles home">
+      <svg class="mark" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="18" stroke="#a673ff" stroke-width="1.4" opacity=".35"/>
+        <circle cx="20" cy="20" r="11" stroke="#c655e8" stroke-width="1.6" opacity=".6"/>
+        <circle cx="20" cy="20" r="4.5" fill="#a673ff"/>
+      </svg>
+      Salí
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#how" data-i18n="nav_how">How it works</a>
+      <a href="#features" data-i18n="nav_features">Features</a>
+      <a href="#salimos" data-i18n="nav_salimos">Salimos</a>
+      <a href="#trust" data-i18n="nav_trust">Trust &amp; privacy</a>
+      <a href="#faq" data-i18n="nav_faq">FAQ</a>
+    </nav>
+    <div class="nav-right">
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button data-lang="en" class="active">EN</button>
+        <button data-lang="es">ES</button>
+      </div>
+      <a href="#waitlist" class="btn btn-primary" data-i18n="nav_cta">Join the waitlist</a>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow reveal"><span class="dot"></span><span data-i18n="hero_eyebrow">Coming soon — join the waitlist</span></span>
+      <h1 class="hero-title reveal" data-i18n-html="hero_title">Someone's <em>watching out</em> for you when you're out.</h1>
+      <p class="hero-sub reveal" data-i18n="hero_sub">Salí lets you share live check-ins with the people you trust. Create a circle, start a watch-me session when you head out, and your people can see you're okay — until you mark yourself safe.</p>
+      <div class="reveal">
+        <div class="waitlist" id="waitlistTop" data-source="hero">
+          <input type="email" placeholder="you@email.com" aria-label="Email address" data-i18n-ph="form_ph">
+          <button class="btn btn-primary" data-i18n="form_btn">Notify me</button>
+        </div>
+        <p class="form-note" data-i18n="form_note">We'll only email you when Salí is ready. No spam, ever.</p>
+        <p class="form-success" data-success><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="form_done">You're on the list — gracias. We'll be in touch.</span></p>
+        <p class="form-error" data-error data-i18n="form_err">Something went wrong — please try again.</p>
+      </div>
+    </div>
+    <div class="hero-visual reveal" aria-hidden="true">
+      <div class="rings"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="scr-head" data-i18n="phone_head">Cuídame · active</div>
+          <div class="scr-card">
+            <div class="scr-status"><span class="d"></span><span data-i18n="phone_status">Your circle is watching</span></div>
+            <div class="scr-title" data-i18n="phone_title">Walk home</div>
+            <div class="scr-count">12:48</div>
+            <div class="scr-meta" data-i18n="phone_meta">until check-in expires</div>
+            <div class="scr-avatars"><span class="av1">M</span><span class="av2">J</span><span class="av3">L</span><span class="av4">+2</span></div>
+            <div class="scr-btn" data-i18n="phone_safe">I'm home safe</div>
+            <div class="scr-sos" data-i18n="phone_sos">HOLD FOR SOS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST STRIP -->
+<div class="strip">
+  <div class="wrap">
+    <div class="trust-strip reveal">
+      <span><span class="d"></span><span data-i18n="strip1">No data collection</span></span>
+      <span><span class="d"></span><span data-i18n="strip2">No ads, ever</span></span>
+      <span><span class="d"></span><span data-i18n="strip3">Your location stays yours</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="wrap">
+    <p class="sec-tag reveal" data-i18n="how_tag">How it works</p>
+    <h2 class="reveal" data-i18n-html="how_title">Three taps between <em>you</em> and your people.</h2>
+    <p class="lede reveal" data-i18n="how_lede">No dispatchers, no strangers. Just the friends and family you choose, looking out for each other.</p>
+    <div class="steps">
+      <div class="step reveal"><div class="n">1</div><h3 data-i18n="step1_t">Build your circle</h3><p data-i18n="step1_p">Add the people you trust — close friends, family, your roommate. Make a general circle, or a vacation circle that lasts the length of a trip.</p></div>
+      <div class="step reveal"><div class="n">2</div><h3 data-i18n="step2_t">Start a Cuídame</h3><p data-i18n="step2_p">Heading out on a date, a night out, or a walk home? Start a watch-me session. Your circle can see you're okay, with a live countdown and check-ins.</p></div>
+      <div class="step reveal"><div class="n">3</div><h3 data-i18n="step3_t">Mark yourself safe</h3><p data-i18n="step3_p">Made it? Tap "I'm home safe" and the session ends. If something feels off, one tap sends an SOS with your location to your circle.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <p class="sec-tag reveal" data-i18n="feat_tag">What's inside</p>
+    <h2 class="reveal" data-i18n-html="feat_title">Built for the moments you want <em>someone there</em>.</h2>
+    <div class="features">
+      <div class="feat reveal"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><circle cx="17.5" cy="9" r="2.4"/><path d="M16 14.5c2.8.2 5 1.7 5 4.5"/></svg></div><h3 data-i18n="f1_t">Circles</h3><p data-i18n="f1_p">Trusted groups of friends and family. Keep an everyday circle, or spin up a vacation circle for a trip.</p></div>
+      <div class="feat bright reveal"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div><h3 data-i18n="f2_t">Cuídame sessions</h3><p data-i18n="f2_p">A watch-me mode with a live countdown, check-ins, and auto-expiry — so your circle knows the moment you're safe.</p></div>
+      <div class="feat magenta reveal"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5 3.8 8.5 9 10 5.2-1.5 9-5 9-10V6z"/><path d="M12 8v4M12 15.5v.5"/></svg></div><h3 data-i18n="f3_t">SOS alert</h3><p data-i18n="f3_p">One tap alerts your circle with your location. Includes a duress-PIN cancel, contact acknowledgment, and a resolution flow.</p></div>
+      <div class="feat reveal"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></div><h3 data-i18n="f4_t">Safe Zones</h3><p data-i18n="f4_p">Mark trusted places — home, a friend's, work — on a map for each circle, so arrivals are easy to see.</p></div>
+      <div class="feat bright reveal"><div class="ic"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5.5A8 8 0 1 1 21 12Z"/></svg></div><h3 data-i18n="f5_t">In-circle chat</h3><p data-i18n="f5_p">A private chat per circle and live location sharing, so coordinating a night out stays in one place.</p></div>
+      <div class="feat magenta reveal"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg></div><h3 data-i18n="f6_t">Bilingual, by design</h3><p data-i18n="f6_p">Salí speaks English and Spanish from day one — built with Dominican roots and family in mind.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SALIMOS SPOTLIGHT -->
+<section id="salimos" class="spotlight">
+  <div class="wrap spotlight-grid">
+    <div class="spot-copy">
+      <p class="sec-tag reveal" data-i18n="sal_tag">For the whole family</p>
+      <h2 class="reveal" data-i18n-html="sal_title">Salimos — go out together, <em>arrive together</em>.</h2>
+      <p class="lede reveal" data-i18n="sal_lede">Salimos turns a circle into a supervised group outing. A parent or organizer keeps the whole group on one screen — kids, cousins, abuela — so everyone heads out together and everyone's accounted for.</p>
+      <p class="small reveal" data-i18n="sal_p2">Perfect for a family beach day, a school trip, or a night out with friends where someone's keeping count.</p>
+    </div>
+    <div class="sal-visual reveal" aria-hidden="true">
+      <div class="sal-glow"></div>
+      <div class="sal-card">
+        <div class="h" data-i18n="sal_card_head">Salimos · active</div>
+        <div class="t" data-i18n="sal_card_title">Family beach day</div>
+        <div class="sal-avatars">
+          <span class="av1">M</span><span class="av2">P</span><span class="av3">A</span><span class="av4" style="background:#8b5cf6">D</span><span style="background:var(--purple-bright)">L</span>
+        </div>
+        <div class="sal-status"><span class="d"></span><span data-i18n="sal_card_status">5 of 5 checked in</span></div>
+        <div class="sal-meta" data-i18n="sal_card_meta">Organized by Mamá</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section id="trust" class="trust">
+  <div class="wrap trust-grid">
+    <div>
+      <p class="sec-tag reveal" data-i18n="trust_tag">Trust &amp; privacy</p>
+      <h2 class="reveal" data-i18n-html="trust_title">We don't collect your data. <em>We never will.</em></h2>
+      <p class="lede reveal" data-i18n="trust_lede">Salí only works if you trust it — so we built it on a promise most apps can't make: we don't collect, store for profit, or sell your information. Your circle is the only audience.</p>
+    </div>
+    <div>
+      <div class="trust-list">
+        <div class="trust-item reveal"><div class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div><h4 data-i18n="t1_t">Zero data collection</h4><p data-i18n="t1_p">No ad trackers, no data brokers, no selling your location to anyone. We don't, and we never will.</p></div></div>
+        <div class="trust-item reveal"><div class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div><h4 data-i18n="t2_t">Shared only with your circle</h4><p data-i18n="t2_p">Your live location and check-ins are visible only to the contacts you add — and to no one else.</p></div></div>
+        <div class="trust-item reveal"><div class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div><h4 data-i18n="t3_t">You're in control</h4><p data-i18n="t3_p">You decide who's in a circle, when a session is live, and when it ends. Stop sharing any time.</p></div></div>
+        <div class="trust-item reveal"><div class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div><h4 data-i18n="t4_t">Kept only as long as needed</h4><p data-i18n="t4_p">Session data is retained briefly to make the feature work, then removed. Our Privacy Policy spells out exactly how long.</p></div></div>
+      </div>
+      <div class="disclaimer reveal">
+        <p><strong data-i18n="disc_strong">Salí is not an emergency service.</strong> <span data-i18n="disc_body">It helps the people you trust look out for you — it does not contact police, fire, or medical responders. In a life-threatening emergency, always call your local emergency number first.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<section id="waitlist" class="cta-band">
+  <div class="wrap inner">
+    <p class="sec-tag reveal" style="color:var(--purple-bright)" data-i18n="cta_tag">Be first in line</p>
+    <h2 class="reveal" data-i18n-html="cta_title">Get notified when <em>Salí</em> launches.</h2>
+    <p class="lede reveal" style="margin:0 auto" data-i18n="cta_lede">We're putting the finishing touches on Salí before it reaches the app stores. Leave your email and you'll be among the first to know.</p>
+    <div class="reveal">
+      <div class="waitlist" id="waitlistBottom" data-source="cta">
+        <input type="email" placeholder="you@email.com" aria-label="Email address" data-i18n-ph="form_ph">
+        <button class="btn btn-primary" data-i18n="form_btn">Notify me</button>
+      </div>
+      <p class="form-success" data-success style="justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="form_done">You're on the list — gracias. We'll be in touch.</span></p>
+      <p class="form-error" data-error data-i18n="form_err" style="justify-content:center">Something went wrong — please try again.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <p class="sec-tag reveal" data-i18n="faq_tag">Questions</p>
+    <h2 class="reveal" data-i18n="faq_title">Good things to ask</h2>
+    <div class="faq-list reveal">
+      <div class="faq-item"><button class="faq-q" data-i18n="q1">Is Salí a replacement for 911 or emergency services?</button><div class="faq-a"><p data-i18n="a1">No. Salí is a way for people you trust to look out for you — it alerts your circle, not emergency responders. If you're in a life-threatening situation, call your local emergency number first.</p></div></div>
+      <div class="faq-item"><button class="faq-q" data-i18n="q2">When is it launching?</button><div class="faq-a"><p data-i18n="a2">We're in the final stretch before submitting to the app stores. Join the waitlist and we'll email you the moment it's available to download.</p></div></div>
+      <div class="faq-item"><button class="faq-q" data-i18n="q3">Who can see my location?</button><div class="faq-a"><p data-i18n="a3">Only the contacts in the circle you're sharing with, and only while a session is active or you choose to share. You can stop sharing at any time.</p></div></div>
+      <div class="faq-item"><button class="faq-q" data-i18n="q6">Do you sell or make money from my data?</button><div class="faq-a"><p data-i18n="a6">No. Salí makes no money from your data — we don't sell it, share it with advertisers, or hand it to data brokers. That's a core promise, not a setting you have to switch on.</p></div></div>
+      <div class="faq-item"><button class="faq-q" data-i18n="q4">What does "Cuídame" mean?</button><div class="faq-a"><p data-i18n="a4">"Cuídame" is Spanish for "watch over me." It's the watch-me session you start when heading out, so your circle can keep an eye on you until you're safe.</p></div></div>
+      <div class="faq-item"><button class="faq-q" data-i18n="q5">Is it free?</button><div class="faq-a"><p data-i18n="a5">We'll share full pricing details at launch. Waitlist members will be the first to hear.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="#" class="logo">
+          <svg class="mark" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="18" stroke="#a673ff" stroke-width="1.4" opacity=".35"/>
+            <circle cx="20" cy="20" r="11" stroke="#c655e8" stroke-width="1.6" opacity=".6"/>
+            <circle cx="20" cy="20" r="4.5" fill="#a673ff"/>
+          </svg>
+          Salí
+        </a>
+        <p data-i18n="foot_tag">Someone's always watching out for you when you're out.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h5 data-i18n="foot_product">Product</h5>
+          <a href="#how" data-i18n="nav_how">How it works</a>
+          <a href="#features" data-i18n="nav_features">Features</a>
+          <a href="#salimos" data-i18n="nav_salimos">Salimos</a>
+          <a href="#waitlist" data-i18n="nav_cta">Join the waitlist</a>
+        </div>
+        <div class="foot-col">
+          <h5 data-i18n="foot_legal">Legal</h5>
+          <a href="#" data-i18n="foot_privacy">Privacy Policy</a>
+          <a href="#" data-i18n="foot_terms">Terms of Service</a>
+          <a href="#trust" data-i18n="nav_trust">Trust &amp; privacy</a>
+        </div>
+        <div class="foot-col">
+          <h5 data-i18n="foot_contact">Contact</h5>
+          <a href="mailto:hello@salicircles.com">hello@salicircles.com</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="year"></span> Salí Circles. <span data-i18n="foot_rights">All rights reserved.</span></span>
+      <span data-i18n="foot_made">Hecho con cariño · Made with care</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   1. WAITLIST CONFIG  <-- set this ONE line to go live.
+   Paste your Formspree endpoint here, e.g.
+   const FORM_ENDPOINT = "https://formspree.io/f/abcdwxyz";
+   Left as "" the form still works for testing (logs to console).
+============================================================ */
+const FORM_ENDPOINT = "https://formspree.io/f/xgobwvpe";
+
+/* 2. BILINGUAL DICTIONARY */
+const I18N = {
+  en:{
+    nav_how:"How it works",nav_features:"Features",nav_salimos:"Salimos",nav_trust:"Trust & privacy",nav_faq:"FAQ",nav_cta:"Join the waitlist",
+    hero_eyebrow:"Coming soon — join the waitlist",
+    hero_title:"Someone's <em>watching out</em> for you when you're out.",
+    hero_sub:"Salí lets you share live check-ins with the people you trust. Create a circle, start a watch-me session when you head out, and your people can see you're okay — until you mark yourself safe.",
+    form_ph:"you@email.com",form_btn:"Notify me",
+    form_note:"We'll only email you when Salí is ready. No spam, ever.",
+    form_done:"You're on the list — gracias. We'll be in touch.",
+    form_err:"Something went wrong — please try again.",
+    phone_head:"Cuídame · active",phone_status:"Your circle is watching",phone_title:"Walk home",
+    phone_meta:"until check-in expires",phone_safe:"I'm home safe",phone_sos:"HOLD FOR SOS",
+    strip1:"No data collection",strip2:"No ads, ever",strip3:"Your location stays yours",
+    how_tag:"How it works",how_title:"Three taps between <em>you</em> and your people.",
+    how_lede:"No dispatchers, no strangers. Just the friends and family you choose, looking out for each other.",
+    step1_t:"Build your circle",step1_p:"Add the people you trust — close friends, family, your roommate. Make a general circle, or a vacation circle that lasts the length of a trip.",
+    step2_t:"Start a Cuídame",step2_p:"Heading out on a date, a night out, or a walk home? Start a watch-me session. Your circle can see you're okay, with a live countdown and check-ins.",
+    step3_t:"Mark yourself safe",step3_p:"Made it? Tap \"I'm home safe\" and the session ends. If something feels off, one tap sends an SOS with your location to your circle.",
+    feat_tag:"What's inside",feat_title:"Built for the moments you want <em>someone there</em>.",
+    f1_t:"Circles",f1_p:"Trusted groups of friends and family. Keep an everyday circle, or spin up a vacation circle for a trip.",
+    f2_t:"Cuídame sessions",f2_p:"A watch-me mode with a live countdown, check-ins, and auto-expiry — so your circle knows the moment you're safe.",
+    f3_t:"SOS alert",f3_p:"One tap alerts your circle with your location. Includes a duress-PIN cancel, contact acknowledgment, and a resolution flow.",
+    f4_t:"Safe Zones",f4_p:"Mark trusted places — home, a friend's, work — on a map for each circle, so arrivals are easy to see.",
+    f5_t:"In-circle chat",f5_p:"A private chat per circle and live location sharing, so coordinating a night out stays in one place.",
+    f6_t:"Bilingual, by design",f6_p:"Salí speaks English and Spanish from day one — built with Dominican roots and family in mind.",
+    sal_tag:"For the whole family",
+    sal_title:"Salimos — go out together, <em>arrive together</em>.",
+    sal_lede:"Salimos turns a circle into a supervised group outing. A parent or organizer keeps the whole group on one screen — kids, cousins, abuela — so everyone heads out together and everyone's accounted for.",
+    sal_p2:"Perfect for a family beach day, a school trip, or a night out with friends where someone's keeping count.",
+    sal_card_head:"Salimos · active",sal_card_title:"Family beach day",sal_card_status:"5 of 5 checked in",sal_card_meta:"Organized by Mamá",
+    trust_tag:"Trust & privacy",trust_title:"We don't collect your data. <em>We never will.</em>",
+    trust_lede:"Salí only works if you trust it — so we built it on a promise most apps can't make: we don't collect, store for profit, or sell your information. Your circle is the only audience.",
+    t1_t:"Zero data collection",t1_p:"No ad trackers, no data brokers, no selling your location to anyone. We don't, and we never will.",
+    t2_t:"Shared only with your circle",t2_p:"Your live location and check-ins are visible only to the contacts you add — and to no one else.",
+    t3_t:"You're in control",t3_p:"You decide who's in a circle, when a session is live, and when it ends. Stop sharing any time.",
+    t4_t:"Kept only as long as needed",t4_p:"Session data is retained briefly to make the feature work, then removed. Our Privacy Policy spells out exactly how long.",
+    disc_strong:"Salí is not an emergency service.",disc_body:"It helps the people you trust look out for you — it does not contact police, fire, or medical responders. In a life-threatening emergency, always call your local emergency number first.",
+    cta_tag:"Be first in line",cta_title:"Get notified when <em>Salí</em> launches.",
+    cta_lede:"We're putting the finishing touches on Salí before it reaches the app stores. Leave your email and you'll be among the first to know.",
+    faq_tag:"Questions",faq_title:"Good things to ask",
+    q1:"Is Salí a replacement for 911 or emergency services?",
+    a1:"No. Salí is a way for people you trust to look out for you — it alerts your circle, not emergency responders. If you're in a life-threatening situation, call your local emergency number first.",
+    q2:"When is it launching?",a2:"We're in the final stretch before submitting to the app stores. Join the waitlist and we'll email you the moment it's available to download.",
+    q3:"Who can see my location?",a3:"Only the contacts in the circle you're sharing with, and only while a session is active or you choose to share. You can stop sharing at any time.",
+    q6:"Do you sell or make money from my data?",a6:"No. Salí makes no money from your data — we don't sell it, share it with advertisers, or hand it to data brokers. That's a core promise, not a setting you have to switch on.",
+    q4:"What does \"Cuídame\" mean?",a4:"\"Cuídame\" is Spanish for \"watch over me.\" It's the watch-me session you start when heading out, so your circle can keep an eye on you until you're safe.",
+    q5:"Is it free?",a5:"We'll share full pricing details at launch. Waitlist members will be the first to hear.",
+    foot_tag:"Someone's always watching out for you when you're out.",
+    foot_product:"Product",foot_legal:"Legal",foot_contact:"Contact",
+    foot_privacy:"Privacy Policy",foot_terms:"Terms of Service",
+    foot_rights:"All rights reserved.",foot_made:"Hecho con cariño · Made with care"
+  },
+  es:{
+    nav_how:"Cómo funciona",nav_features:"Funciones",nav_salimos:"Salimos",nav_trust:"Confianza y privacidad",nav_faq:"Preguntas",nav_cta:"Únete a la lista",
+    hero_eyebrow:"Próximamente — únete a la lista",
+    hero_title:"Alguien <em>te cuida</em> cuando sales.",
+    hero_sub:"Salí te deja compartir check-ins en vivo con las personas en quienes confías. Crea un círculo, inicia una sesión de cuidado al salir, y tu gente puede ver que estás bien — hasta que marques que llegaste a salvo.",
+    form_ph:"tu@correo.com",form_btn:"Avísenme",
+    form_note:"Solo te escribiremos cuando Salí esté lista. Nunca spam.",
+    form_done:"Estás en la lista — gracias. Te avisaremos.",
+    form_err:"Algo salió mal — inténtalo de nuevo.",
+    phone_head:"Cuídame · activo",phone_status:"Tu círculo te observa",phone_title:"Camino a casa",
+    phone_meta:"para que expire el check-in",phone_safe:"Llegué a salvo",phone_sos:"MANTÉN PARA SOS",
+    strip1:"Sin recolección de datos",strip2:"Sin anuncios, nunca",strip3:"Tu ubicación es tuya",
+    how_tag:"Cómo funciona",how_title:"Tres toques entre <em>tú</em> y tu gente.",
+    how_lede:"Sin operadores, sin extraños. Solo los amigos y la familia que tú eliges, cuidándose entre sí.",
+    step1_t:"Arma tu círculo",step1_p:"Agrega a las personas en quienes confías — amigos cercanos, familia, tu roommate. Haz un círculo general, o uno de viaje que dure lo que dure el viaje.",
+    step2_t:"Inicia un Cuídame",step2_p:"¿Sales a una cita, una noche de fiesta o caminando a casa? Inicia una sesión de cuidado. Tu círculo verá que estás bien, con cuenta regresiva y check-ins.",
+    step3_t:"Marca que estás a salvo",step3_p:"¿Llegaste? Toca \"Llegué a salvo\" y la sesión termina. Si algo se siente mal, un toque envía un SOS con tu ubicación a tu círculo.",
+    feat_tag:"Qué incluye",feat_title:"Hecha para los momentos en que quieres <em>a alguien ahí</em>.",
+    f1_t:"Círculos",f1_p:"Grupos de confianza de amigos y familia. Mantén un círculo de siempre, o crea uno de viaje para una escapada.",
+    f2_t:"Sesiones Cuídame",f2_p:"Un modo de cuidado con cuenta regresiva en vivo, check-ins y expiración automática — para que tu círculo sepa el momento en que estás a salvo.",
+    f3_t:"Alerta SOS",f3_p:"Un toque alerta a tu círculo con tu ubicación. Incluye cancelación con PIN de coacción, confirmación de contactos y un flujo de resolución.",
+    f4_t:"Zonas Seguras",f4_p:"Marca lugares de confianza — casa, donde un amigo, el trabajo — en un mapa por cada círculo, para ver las llegadas fácilmente.",
+    f5_t:"Chat del círculo",f5_p:"Un chat privado por círculo y ubicación en vivo, para que coordinar una salida quede todo en un solo lugar.",
+    f6_t:"Bilingüe, por diseño",f6_p:"Salí habla español e inglés desde el primer día — hecha con raíces dominicanas y la familia en mente.",
+    sal_tag:"Para toda la familia",
+    sal_title:"Salimos — salgan juntos, <em>lleguen juntos</em>.",
+    sal_lede:"Salimos convierte un círculo en una salida grupal supervisada. Un padre, madre u organizador mantiene a todo el grupo en una sola pantalla — los niños, los primos, la abuela — para que todos salgan juntos y nadie quede sin contar.",
+    sal_p2:"Perfecto para un día de playa en familia, una excursión escolar, o una salida con amigos donde alguien lleva la cuenta.",
+    sal_card_head:"Salimos · activo",sal_card_title:"Día de playa en familia",sal_card_status:"5 de 5 presentes",sal_card_meta:"Organizado por Mamá",
+    trust_tag:"Confianza y privacidad",trust_title:"No recolectamos tus datos. <em>Nunca lo haremos.</em>",
+    trust_lede:"Salí solo funciona si confías en ella — por eso la construimos sobre una promesa que pocas apps pueden hacer: no recolectamos, ni guardamos con fines de lucro, ni vendemos tu información. Tu círculo es la única audiencia.",
+    t1_t:"Cero recolección de datos",t1_p:"Sin rastreadores de anuncios, sin corredores de datos, sin vender tu ubicación a nadie. No lo hacemos, y nunca lo haremos.",
+    t2_t:"Solo con tu círculo",t2_p:"Tu ubicación en vivo y tus check-ins solo los ven los contactos que agregas — y nadie más.",
+    t3_t:"Tú tienes el control",t3_p:"Tú decides quién está en un círculo, cuándo una sesión está activa y cuándo termina. Deja de compartir cuando quieras.",
+    t4_t:"Se guarda solo lo necesario",t4_p:"Los datos de sesión se guardan brevemente para que la función opere, y luego se eliminan. Nuestra Política de Privacidad detalla exactamente cuánto tiempo.",
+    disc_strong:"Salí no es un servicio de emergencia.",disc_body:"Ayuda a que las personas en quienes confías te cuiden — no contacta a la policía, bomberos ni servicios médicos. En una emergencia que amenace la vida, llama siempre primero a tu número local de emergencias.",
+    cta_tag:"Sé de los primeros",cta_title:"Recibe aviso cuando <em>Salí</em> se lance.",
+    cta_lede:"Estamos dando los toques finales a Salí antes de llegar a las tiendas de apps. Deja tu correo y serás de los primeros en saberlo.",
+    faq_tag:"Preguntas",faq_title:"Cosas buenas que preguntar",
+    q1:"¿Salí reemplaza al 911 o a los servicios de emergencia?",
+    a1:"No. Salí es una forma de que las personas en quienes confías te cuiden — alerta a tu círculo, no a los servicios de emergencia. Si estás en una situación que amenaza tu vida, llama primero a tu número local de emergencias.",
+    q2:"¿Cuándo se lanza?",a2:"Estamos en la recta final antes de enviarla a las tiendas de apps. Únete a la lista y te avisaremos en cuanto esté disponible para descargar.",
+    q3:"¿Quién puede ver mi ubicación?",a3:"Solo los contactos del círculo con el que compartes, y solo mientras una sesión está activa o tú eliges compartir. Puedes dejar de compartir en cualquier momento.",
+    q6:"¿Venden o lucran con mis datos?",a6:"No. Salí no gana dinero con tus datos — no los vendemos, ni los compartimos con anunciantes, ni los entregamos a corredores de datos. Es una promesa central, no una opción que tengas que activar.",
+    q4:"¿Qué significa \"Cuídame\"?",a4:"\"Cuídame\" es la sesión de cuidado que inicias al salir, para que tu círculo te observe hasta que estés a salvo.",
+    q5:"¿Es gratis?",a5:"Compartiremos los detalles de precios en el lanzamiento. Los miembros de la lista serán los primeros en enterarse.",
+    foot_tag:"Alguien siempre te cuida cuando sales.",
+    foot_product:"Producto",foot_legal:"Legal",foot_contact:"Contacto",
+    foot_privacy:"Política de Privacidad",foot_terms:"Términos del Servicio",
+    foot_rights:"Todos los derechos reservados.",foot_made:"Hecho con cariño · Made with care"
+  }
+};
+
+function setLang(lang){
+  const d=I18N[lang];document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.getAttribute("data-i18n");if(d[k]!=null)el.textContent=d[k];});
+  document.querySelectorAll("[data-i18n-html]").forEach(el=>{const k=el.getAttribute("data-i18n-html");if(d[k]!=null)el.innerHTML=d[k];});
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{const k=el.getAttribute("data-i18n-ph");if(d[k]!=null)el.placeholder=d[k];});
+  document.querySelectorAll(".lang-toggle button").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));
+}
+document.querySelectorAll(".lang-toggle button").forEach(b=>b.addEventListener("click",()=>setLang(b.dataset.lang)));
+
+/* 3. WAITLIST SUBMIT (Formspree AJAX) */
+function wireForm(form){
+  const input=form.querySelector("input"),btn=form.querySelector("button"),wrap=form.parentElement;
+  const success=wrap.querySelector("[data-success]"),error=wrap.querySelector("[data-error]");
+  const source=form.getAttribute("data-source")||"landing";
+  const done=()=>{form.style.display="none";if(success)success.classList.add("show");};
+  const fail=()=>{btn.disabled=false;btn.style.opacity="";if(error)error.classList.add("show");};
+  const submit=async()=>{
+    if(error)error.classList.remove("show");
+    const email=(input.value||"").trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){input.focus();input.style.borderColor="var(--magenta)";return;}
+    input.style.borderColor="";btn.disabled=true;btn.style.opacity=".6";
+    if(!FORM_ENDPOINT){console.log("[Sali waitlist] no endpoint set:",email,source);return done();}
+    try{
+      const res=await fetch(FORM_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({email,source})});
+      if(res.ok)done();else{console.warn("Formspree rejected submission:",res.status);fail();}
+    }catch(e){console.warn("Waitlist submit failed:",e);fail();}
+  };
+  btn.addEventListener("click",submit);
+  input.addEventListener("keydown",e=>{if(e.key==="Enter")submit();});
+}
+document.querySelectorAll(".waitlist").forEach(wireForm);
+
+/* 4. FAQ ACCORDION */
+document.querySelectorAll(".faq-q").forEach(q=>{
+  q.addEventListener("click",()=>{
+    const item=q.parentElement,ans=item.querySelector(".faq-a"),open=item.classList.contains("open");
+    document.querySelectorAll(".faq-item.open").forEach(i=>{i.classList.remove("open");i.querySelector(".faq-a").style.maxHeight=null;});
+    if(!open){item.classList.add("open");ans.style.maxHeight=ans.scrollHeight+"px";}
+  });
+});
+
+/* 5. MENU + REVEAL + YEAR */
+const menuBtn=document.getElementById("menuBtn"),navLinks=document.getElementById("navLinks");
+menuBtn.addEventListener("click",()=>navLinks.classList.toggle("open"));
+navLinks.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>navLinks.classList.remove("open")));
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});},{threshold:.12});
+document.querySelectorAll(".reveal").forEach((el,i)=>{el.style.transitionDelay=(Math.min(i,6)*55)+"ms";io.observe(el);});
+document.getElementById("year").textContent=new Date().getFullYear();
+
+setLang("en");
+</script>
+</body>
+</html>
